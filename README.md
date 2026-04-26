@@ -1,4 +1,7 @@
-# Multi-Hotel Management System
+# Hotel-Management-System-
+The place for booking hotel  rooms 
+
+
 
 Core Java + Swing + JDBC + Oracle desktop application with customer booking, simulated Razorpay test payment, and hotel admin management.
 
