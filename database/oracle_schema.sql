@@ -87,7 +87,7 @@ ALTER TABLE hotel_admin RENAME COLUMN id TO admin_id;
 INSERT INTO hotels (hotel_id, hotel_name, address, rating) VALUES (1, 'Taj', 'Mumbai', 4.6);
 INSERT INTO hotels (hotel_id, hotel_name, address, rating) VALUES (2, 'Oberoi', 'Delhi', 4.4);
 
-INSERT INTO hotel_admin VALUES (1, 'taj', '123', 1);
+INSERT INTO hotel_admin VALUES (1, 'ashish@gmail.com', '123456', 1);
 INSERT INTO hotel_admin VALUES (2, 'oberoi', '123', 2);
 
 COMMIT;

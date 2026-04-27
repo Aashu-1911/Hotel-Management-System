@@ -37,7 +37,7 @@ public class HotelLoginFrame extends JFrame {
 
         JPanel formPanel = new JPanel(new GridLayout(3, 2, 16, 16));
         formPanel.setOpaque(false);
-        formPanel.add(UIStyle.createLabel("Username"));
+        formPanel.add(UIStyle.createLabel("Email"));
         formPanel.add(usernameField);
         formPanel.add(UIStyle.createLabel("Password"));
         formPanel.add(passwordField);
@@ -64,16 +64,16 @@ public class HotelLoginFrame extends JFrame {
     }
 
     private void login() {
-        String username = usernameField.getText().trim();
+        String email = usernameField.getText().trim();
         String password = new String(passwordField.getPassword()).trim();
 
-        if (username.isEmpty() || password.isEmpty()) {
-            UIStyle.showWarning(this, "Please enter username and password.");
+        if (email.isEmpty() || password.isEmpty()) {
+            UIStyle.showWarning(this, "Please enter email and password.");
             return;
         }
 
         try {
-            int hotelId = new HotelAdminDAO().validateLogin(username, password);
+            int hotelId = new HotelAdminDAO().validateLogin(email, password);
             if (hotelId > 0) {
                 UIStyle.switchFrame(this, new HotelDashboard(hotelId));
             } else {

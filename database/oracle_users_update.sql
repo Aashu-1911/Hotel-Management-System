@@ -33,4 +33,9 @@ ALTER TABLE bookings
 ADD CONSTRAINT fk_user
 FOREIGN KEY (user_id) REFERENCES users(user_id);
 
+UPDATE hotel_admin
+SET username = 'ashish@gmail.com',
+    password = '123456'
+WHERE admin_id = 1;
+
 COMMIT;
