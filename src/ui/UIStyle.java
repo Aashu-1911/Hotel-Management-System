@@ -11,6 +11,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingConstants;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -24,7 +25,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.Window;
 import java.sql.SQLException;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public class UIStyle {
     public static final Color PRIMARY_BLUE = new Color(20, 120, 168);
@@ -44,18 +48,67 @@ public class UIStyle {
     public static final Font BODY_FONT = new Font("Segoe UI", Font.PLAIN, 15);
     public static final Font BUTTON_FONT = new Font("Segoe UI", Font.BOLD, 14);
 
+    private static final Deque<JFrame> FRAME_HISTORY = new ArrayDeque<>();
+
     private UIStyle() {
     }
 
-    public static JLabel createHeader(String text) {
-        JLabel label = new JLabel(text, JLabel.CENTER);
-        label.setOpaque(true);
-        label.setBackground(PRIMARY_BLUE);
-        label.setForeground(Color.WHITE);
-        label.setFont(TITLE_FONT);
-        label.setBorder(BorderFactory.createEmptyBorder(18, 16, 18, 16));
-        label.setPreferredSize(new Dimension(10, 78));
-        return label;
+    public static JPanel createHeader(String text) {
+        JPanel header = new JPanel(new java.awt.BorderLayout());
+        header.setOpaque(true);
+        header.setBackground(PRIMARY_BLUE);
+        header.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
+        header.setPreferredSize(new Dimension(10, 78));
+
+        JButton backButton = new JButton("<");
+        backButton.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        backButton.setForeground(Color.WHITE);
+        backButton.setBackground(PRIMARY_BLUE_DARK);
+        backButton.setFocusPainted(false);
+        backButton.setBorderPainted(false);
+        backButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        backButton.setPreferredSize(new Dimension(46, 46));
+        backButton.addActionListener(e -> goBackFromButton(backButton));
+
+        JLabel title = new JLabel(text, JLabel.CENTER);
+        title.setForeground(Color.WHITE);
+        title.setFont(TITLE_FONT);
+
+        JPanel leftPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+        leftPanel.setOpaque(false);
+        leftPanel.add(backButton);
+
+        JPanel rightSpacer = new JPanel();
+        rightSpacer.setOpaque(false);
+        rightSpacer.setPreferredSize(new Dimension(46, 46));
+
+        header.add(leftPanel, java.awt.BorderLayout.WEST);
+        header.add(title, java.awt.BorderLayout.CENTER);
+        header.add(rightSpacer, java.awt.BorderLayout.EAST);
+        return header;
+    }
+
+    private static void goBackFromButton(Component source) {
+        Window window = SwingUtilities.getWindowAncestor(source);
+        if (window instanceof JFrame) {
+            goBack((JFrame) window);
+        }
+    }
+
+    public static void goBack(JFrame currentFrame) {
+        while (!FRAME_HISTORY.isEmpty()) {
+            JFrame previous = FRAME_HISTORY.pop();
+            if (previous != null && previous.isDisplayable()) {
+                previous.setVisible(true);
+                previous.toFront();
+                if (currentFrame != null && currentFrame.isDisplayable()) {
+                    currentFrame.dispose();
+                }
+                return;
+            }
+        }
+
+        showInfo(currentFrame, "No previous page available.");
     }
 
     public static JLabel createSectionTitle(String text) {
@@ -114,29 +167,33 @@ public class UIStyle {
         JPanel sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
         sidebar.setBackground(SIDEBAR);
-        sidebar.setPreferredSize(new Dimension(230, 10));
-        sidebar.setBorder(BorderFactory.createEmptyBorder(22, 14, 22, 14));
+        sidebar.setPreferredSize(new Dimension(270, 10));
+        sidebar.setBorder(BorderFactory.createEmptyBorder(22, 16, 22, 16));
 
         JLabel brand = new JLabel("Hotel System");
         brand.setForeground(Color.WHITE);
-        brand.setFont(new Font("Segoe UI", Font.BOLD, 21));
+        brand.setFont(new Font("Segoe UI", Font.BOLD, 24));
         brand.setAlignmentX(JLabel.CENTER_ALIGNMENT);
         brand.setBorder(BorderFactory.createEmptyBorder(0, 0, 24, 0));
         sidebar.add(brand);
 
-        sidebar.add(createSidebarButton("Dashboard", "icons/dashboard.png", dashboardAction));
-        sidebar.add(Box.createVerticalStrut(10));
-    sidebar.add(createSidebarButton("Profile", "icons/view.png", profileAction));
-    sidebar.add(Box.createVerticalStrut(10));
-        sidebar.add(createSidebarButton("Book Room", "icons/booking.png", bookAction));
-        sidebar.add(Box.createVerticalStrut(10));
-        sidebar.add(createSidebarButton("View Bookings", "icons/view.png", viewAction));
-        sidebar.add(Box.createVerticalStrut(10));
-        sidebar.add(createSidebarButton("Checkout", "icons/checkout.png", checkoutAction));
+        addSidebarAction(sidebar, "Dashboard", "icons/dashboard.png", dashboardAction);
+        addSidebarAction(sidebar, "Profile", "icons/view.png", profileAction);
+        addSidebarAction(sidebar, "Book Room", "icons/booking.png", bookAction);
+        addSidebarAction(sidebar, "View Bookings", "icons/view.png", viewAction);
+        addSidebarAction(sidebar, "Checkout", "icons/checkout.png", checkoutAction);
         sidebar.add(Box.createVerticalGlue());
-        sidebar.add(createSidebarButton("Logout", "icons/logout.png", logoutAction));
+        addSidebarAction(sidebar, "Logout", "icons/logout.png", logoutAction);
 
         return sidebar;
+    }
+
+    private static void addSidebarAction(JPanel sidebar, String text, String iconPath, Runnable action) {
+        if (action == null) {
+            return;
+        }
+        sidebar.add(createSidebarButton(text, iconPath, action));
+        sidebar.add(Box.createVerticalStrut(10));
     }
 
     public static JButton createSidebarButton(String text, String iconPath, Runnable action) {
@@ -150,9 +207,9 @@ public class UIStyle {
         button.setOpaque(true);
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         button.setFont(BUTTON_FONT);
-        button.setMargin(new Insets(12, 14, 12, 14));
-        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 48));
-        button.setPreferredSize(new Dimension(200, 48));
+        button.setMargin(new Insets(14, 16, 14, 16));
+        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 54));
+        button.setPreferredSize(new Dimension(236, 54));
         button.setEnabled(action != null);
 
         if (action != null) {
@@ -313,11 +370,19 @@ public class UIStyle {
     }
 
     public static void switchFrame(JFrame currentFrame, JFrame nextFrame) {
+        if (nextFrame instanceof UserLoginFrame || nextFrame instanceof HotelLoginFrame) {
+            FRAME_HISTORY.clear();
+        }
+
+        if (currentFrame != null && nextFrame != null && currentFrame != nextFrame) {
+            FRAME_HISTORY.push(currentFrame);
+        }
+
         if (nextFrame != null) {
             nextFrame.setVisible(true);
         }
         if (currentFrame != null) {
-            currentFrame.dispose();
+            currentFrame.setVisible(false);
         }
     }
 }

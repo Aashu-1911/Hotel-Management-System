@@ -50,8 +50,7 @@ public class SignupFrame extends JFrame {
         JButton loginButton = UIStyle.createDarkButton("Back to Login");
         signupButton.addActionListener(e -> signup());
         loginButton.addActionListener(e -> {
-            new UserLoginFrame().setVisible(true);
-            dispose();
+            UIStyle.switchFrame(this, new UserLoginFrame());
         });
 
         formPanel.add(signupButton);
@@ -91,8 +90,7 @@ public class SignupFrame extends JFrame {
         try {
             new UserDAO().registerUser(name, email, password);
             UIStyle.showInfo(this, "Signup successful. Please login.");
-            new UserLoginFrame().setVisible(true);
-            dispose();
+            UIStyle.switchFrame(this, new UserLoginFrame());
         } catch (SQLException e) {
             String errorMessage = e.getMessage() == null ? "" : e.getMessage().toLowerCase();
             if (e.getErrorCode() == 1 || errorMessage.contains("unique")) {

@@ -46,8 +46,7 @@ public class UserLoginFrame extends JFrame {
         JButton signupButton = UIStyle.createDarkButton("Create Account");
         loginButton.addActionListener(e -> login());
         signupButton.addActionListener(e -> {
-            new SignupFrame().setVisible(true);
-            dispose();
+            UIStyle.switchFrame(this, new SignupFrame());
         });
 
         formPanel.add(loginButton);
@@ -58,8 +57,7 @@ public class UserLoginFrame extends JFrame {
         footerPanel.setOpaque(false);
         JButton adminLoginButton = UIStyle.createDarkButton("Hotel Admin Login");
         adminLoginButton.addActionListener(e -> {
-            new HotelLoginFrame().setVisible(true);
-            dispose();
+            UIStyle.switchFrame(this, new HotelLoginFrame());
         });
         footerPanel.add(adminLoginButton);
         card.add(footerPanel, BorderLayout.SOUTH);
@@ -91,8 +89,7 @@ public class UserLoginFrame extends JFrame {
         try {
             int userId = new UserDAO().loginUser(email, password);
             if (userId > 0) {
-                new Dashboard(userId).setVisible(true);
-                dispose();
+                UIStyle.switchFrame(this, new Dashboard(userId));
             } else {
                 UIStyle.showWarning(this, "Invalid email or password.");
             }

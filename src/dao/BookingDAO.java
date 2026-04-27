@@ -100,6 +100,32 @@ public class BookingDAO {
         return bookings;
     }
 
+    public List<BookingRecord> getBookingsByUser(int userId) throws SQLException {
+        List<BookingRecord> bookings = new ArrayList<>();
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(buildBookingsByUserSql(hasColumn(connection, "BOOKINGS", "NUMBER_OF_PEOPLE")))) {
+            statement.setInt(1, userId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    bookings.add(new BookingRecord(
+                            resultSet.getInt("booking_id"),
+                            resultSet.getString("name"),
+                            resultSet.getInt("room_id"),
+                            resultSet.getInt("number_of_people"),
+                            resultSet.getDate("check_in"),
+                            resultSet.getDate("check_out"),
+                            resultSet.getDouble("total_amount"),
+                            resultSet.getString("payment_status")
+                    ));
+                }
+            }
+        }
+
+        return bookings;
+    }
+
     private String buildBookingsByHotelSql(boolean hasPeopleColumn) {
         String peopleProjection = hasPeopleColumn ? "NVL(b.number_of_people, 1)" : "1";
         return "SELECT b.booking_id, u.name, b.room_id, " + peopleProjection + " AS number_of_people, "
@@ -107,6 +133,16 @@ public class BookingDAO {
                 + "FROM bookings b "
                 + "JOIN users u ON b.user_id = u.user_id "
                 + "WHERE b.hotel_id = ? "
+                + "ORDER BY b.booking_id DESC";
+    }
+
+    private String buildBookingsByUserSql(boolean hasPeopleColumn) {
+        String peopleProjection = hasPeopleColumn ? "NVL(b.number_of_people, 1)" : "1";
+        return "SELECT b.booking_id, h.hotel_name AS name, b.room_id, " + peopleProjection + " AS number_of_people, "
+                + "b.check_in, b.check_out, b.total_amount, b.payment_status "
+                + "FROM bookings b "
+                + "JOIN hotels h ON b.hotel_id = h.hotel_id "
+                + "WHERE b.user_id = ? "
                 + "ORDER BY b.booking_id DESC";
     }
 

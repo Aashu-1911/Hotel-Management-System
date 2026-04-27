@@ -2,7 +2,6 @@ package ui;
 
 import dao.HotelDAO;
 import dao.RoomDAO;
-import dao.UserDAO;
 import model.Hotel;
 import model.Room;
 
@@ -106,10 +105,10 @@ public class BookingForm extends JFrame {
                 () -> {
                     UIStyle.switchFrame(this, new Dashboard(userId));
                 },
-                () -> showProfile(),
-                () -> { },
-                () -> UIStyle.showInfo(this, "View Bookings is available from Hotel Admin login."),
-                () -> UIStyle.showInfo(this, "Checkout is available from Hotel Admin login."),
+                () -> openUserProfile(),
+                null,
+                () -> openUserBookings(),
+                null,
                 () -> {
                     UIStyle.switchFrame(this, new UserLoginFrame());
                 }
@@ -604,26 +603,22 @@ public class BookingForm extends JFrame {
         }
     }
 
-    private void showProfile() {
+    private void openUserProfile() {
         if (userId <= 0) {
             UIStyle.showWarning(this, "Please login to view profile.");
             return;
         }
 
-        try {
-            String[] profile = new UserDAO().getUserProfile(userId);
-            if (profile == null) {
-                UIStyle.showWarning(this, "Profile details are not available.");
-                return;
-            }
+        UIStyle.switchFrame(this, new UserProfileFrame(userId));
+    }
 
-            String message = "User ID: " + userId + "\n"
-                    + "Name: " + profile[0] + "\n"
-                    + "Email: " + profile[1];
-            UIStyle.showInfo(this, message);
-        } catch (SQLException e) {
-            UIStyle.showDatabaseError(this, "Unable to load profile.", e);
+    private void openUserBookings() {
+        if (userId <= 0) {
+            UIStyle.showWarning(this, "Please login to view bookings.");
+            return;
         }
+
+        UIStyle.switchFrame(this, new UserBookingsFrame(userId));
     }
 
     private static class PriceBreakdown {

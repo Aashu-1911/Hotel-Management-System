@@ -46,8 +46,7 @@ public class HotelLoginFrame extends JFrame {
         JButton backButton = UIStyle.createDarkButton("Customer Login");
         loginButton.addActionListener(e -> login());
         backButton.addActionListener(e -> {
-            new UserLoginFrame().setVisible(true);
-            dispose();
+            UIStyle.switchFrame(this, new UserLoginFrame());
         });
 
         formPanel.add(loginButton);
@@ -76,8 +75,7 @@ public class HotelLoginFrame extends JFrame {
         try {
             int hotelId = new HotelAdminDAO().validateLogin(username, password);
             if (hotelId > 0) {
-                new HotelDashboard(hotelId).setVisible(true);
-                dispose();
+                UIStyle.switchFrame(this, new HotelDashboard(hotelId));
             } else {
                 UIStyle.showWarning(this, "Invalid hotel admin login.");
             }

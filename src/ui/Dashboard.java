@@ -2,7 +2,6 @@ package ui;
 
 import dao.HotelDAO;
 import dao.RoomDAO;
-import dao.UserDAO;
 import model.HotelCatalog;
 import model.Room;
 
@@ -36,7 +35,6 @@ import java.util.TreeSet;
 public class Dashboard extends JFrame {
     private final HotelDAO hotelDAO = new HotelDAO();
     private final RoomDAO roomDAO = new RoomDAO();
-    private final UserDAO userDAO = new UserDAO();
     private final int userId;
 
     private final JPanel hotelsCardsContainer = new JPanel();
@@ -68,10 +66,10 @@ public class Dashboard extends JFrame {
         add(UIStyle.createHeader("Customer Dashboard"), BorderLayout.NORTH);
         add(UIStyle.createSidebarPanel(
                 () -> { },
-                () -> showProfile(),
-                () -> openBookingForm(selectedHotelId),
-                () -> UIStyle.showInfo(this, "View Bookings is available from Hotel Admin login."),
-                () -> UIStyle.showInfo(this, "Checkout is available from Hotel Admin login."),
+            () -> openUserProfile(),
+            null,
+            () -> openUserBookings(),
+            null,
                 () -> UIStyle.switchFrame(this, new UserLoginFrame())
         ), BorderLayout.WEST);
 
@@ -411,25 +409,21 @@ public class Dashboard extends JFrame {
         applyFilters();
     }
 
-    private void showProfile() {
+    private void openUserProfile() {
         if (userId <= 0) {
             UIStyle.showWarning(this, "Please login to view profile.");
             return;
         }
 
-        try {
-            String[] profile = userDAO.getUserProfile(userId);
-            if (profile == null) {
-                UIStyle.showWarning(this, "Profile details are not available.");
-                return;
-            }
+        UIStyle.switchFrame(this, new UserProfileFrame(userId));
+    }
 
-            String message = "User ID: " + userId + "\n"
-                    + "Name: " + profile[0] + "\n"
-                    + "Email: " + profile[1];
-            UIStyle.showInfo(this, message);
-        } catch (SQLException e) {
-            UIStyle.showDatabaseError(this, "Unable to load profile.", e);
+    private void openUserBookings() {
+        if (userId <= 0) {
+            UIStyle.showWarning(this, "Please login to view bookings.");
+            return;
         }
+
+        UIStyle.switchFrame(this, new UserBookingsFrame(userId));
     }
 }
