@@ -7,6 +7,8 @@ import model.HotelCatalog;
 import model.Room;
 
 import javax.swing.JButton;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -80,12 +82,13 @@ public class Dashboard extends JFrame {
         JPanel filterPanel = createFilterPanel();
 
         hotelsCardsContainer.setOpaque(false);
-        hotelsCardsContainer.setLayout(new GridLayout(0, 2, 16, 16));
+        hotelsCardsContainer.setLayout(new BoxLayout(hotelsCardsContainer, BoxLayout.Y_AXIS));
 
         JScrollPane hotelsScrollPane = new JScrollPane(hotelsCardsContainer);
         hotelsScrollPane.setBorder(UIStyle.createCardBorder());
         hotelsScrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        hotelsScrollPane.setPreferredSize(new Dimension(980, 460));
+        hotelsScrollPane.setPreferredSize(new Dimension(980, 540));
+        hotelsScrollPane.setMinimumSize(new Dimension(880, 380));
 
         JPanel contentPanel = new JPanel(new BorderLayout(0, 14));
         contentPanel.setOpaque(false);
@@ -121,9 +124,11 @@ public class Dashboard extends JFrame {
         JPanel page = UIStyle.createPagePanel();
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
+        gbc.weighty = 1;
         UIStyle.setFixedCardWidth(card, 1140);
+        card.setMinimumSize(new Dimension(980, 720));
         page.add(card, gbc);
         add(page, BorderLayout.CENTER);
 
@@ -257,7 +262,7 @@ public class Dashboard extends JFrame {
         double minRating = getSelectedMinRating();
         boolean onlyAvailable = "Available Rooms Only".equals(availabilityFilterCombo.getSelectedItem());
 
-        int visibleCards = 0;
+        List<JPanel> matchedCards = new ArrayList<>();
         for (HotelCatalog hotel : allHotels) {
             if (!query.isEmpty() && !hotel.getHotelName().toLowerCase().contains(query)) {
                 continue;
@@ -276,15 +281,38 @@ public class Dashboard extends JFrame {
                 continue;
             }
 
-            hotelsCardsContainer.add(createHotelCard(hotel));
-            visibleCards++;
+            matchedCards.add(createHotelCard(hotel));
         }
 
-        if (visibleCards == 0) {
+        if (matchedCards.isEmpty()) {
             JLabel emptyLabel = new JLabel("No hotels match your search/filter. Try different filters.", JLabel.CENTER);
             emptyLabel.setFont(UIStyle.BODY_FONT);
             emptyLabel.setForeground(UIStyle.TEXT_MUTED);
+            emptyLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(14, 8, 14, 8));
             hotelsCardsContainer.add(emptyLabel);
+        } else {
+            for (int i = 0; i < matchedCards.size(); i += 2) {
+                JPanel row = new JPanel(new GridLayout(1, 2, 14, 0));
+                row.setOpaque(false);
+                row.setAlignmentX(JPanel.LEFT_ALIGNMENT);
+                row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 310));
+                row.setPreferredSize(new Dimension(0, 292));
+                row.setMinimumSize(new Dimension(0, 292));
+                row.add(matchedCards.get(i));
+
+                if (i + 1 < matchedCards.size()) {
+                    row.add(matchedCards.get(i + 1));
+                } else {
+                    JPanel placeholder = new JPanel();
+                    placeholder.setOpaque(false);
+                    row.add(placeholder);
+                }
+
+                hotelsCardsContainer.add(row);
+                hotelsCardsContainer.add(Box.createVerticalStrut(14));
+            }
+
+            hotelsCardsContainer.add(Box.createVerticalGlue());
         }
 
         hotelsCardsContainer.revalidate();
@@ -308,6 +336,8 @@ public class Dashboard extends JFrame {
     private JPanel createHotelCard(HotelCatalog hotel) {
         JPanel card = UIStyle.createCardPanel();
         card.setLayout(new BorderLayout(0, 10));
+        card.setPreferredSize(new Dimension(420, 286));
+        card.setMinimumSize(new Dimension(360, 270));
 
         if (selectedHotelId != null && selectedHotelId == hotel.getHotelId()) {
             card.setBorder(javax.swing.BorderFactory.createCompoundBorder(
@@ -334,7 +364,7 @@ public class Dashboard extends JFrame {
         topPanel.add(locationLabel);
         topPanel.add(ratingLabel);
 
-        JPanel metricsPanel = new JPanel(new GridLayout(2, 2, 8, 8));
+        JPanel metricsPanel = new JPanel(new GridLayout(4, 2, 8, 8));
         metricsPanel.setOpaque(false);
         metricsPanel.add(UIStyle.createLabel("Starting Price"));
         metricsPanel.add(createMetricValue(hotel.getStartingPrice() == null
@@ -347,20 +377,14 @@ public class Dashboard extends JFrame {
         metricsPanel.add(UIStyle.createLabel("Hotel ID"));
         metricsPanel.add(createMetricValue(String.valueOf(hotel.getHotelId())));
 
-        JButton selectButton = UIStyle.createDarkButton("Select");
         JButton bookNowButton = UIStyle.createButton("Book Now");
-        selectButton.addActionListener(e -> {
-            selectedHotelId = hotel.getHotelId();
-            applyFilters();
-        });
         bookNowButton.addActionListener(e -> {
             selectedHotelId = hotel.getHotelId();
             openBookingForm(hotel.getHotelId());
         });
 
-        JPanel actionsPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+        JPanel actionsPanel = new JPanel(new GridLayout(1, 1, 0, 0));
         actionsPanel.setOpaque(false);
-        actionsPanel.add(selectButton);
         actionsPanel.add(bookNowButton);
 
         card.add(topPanel, BorderLayout.NORTH);
